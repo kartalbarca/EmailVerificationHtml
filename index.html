@@ -1,56 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-    <title>Register/Login</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firebase Auth Demo</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
 </head>
 <body>
 <div class="container">
-    <h1>Kayıt / Giriş</h1>
-
-    <h2>Kayıt</h2>
-    <form id="registerForm">
-        Email: <input type="email" id="regEmail" required><br>
-        Şifre: <input type="password" id="regPassword" required><br>
-        <button type="submit">Kayıt Ol</button>
-    </form>
-
-    <h2>Giriş</h2>
-    <form id="loginForm">
-        Email: <input type="email" id="logEmail" required><br>
-        Şifre: <input type="password" id="logPassword" required><br>
-        <button type="submit">Giriş Yap</button>
-    </form>
-
-    <p id="result"></p>
+    <h1>Giriş Yap</h1>
+    <input type="email" id="email" placeholder="Email">
+    <button onclick="sendSignInLink()">Email ile Giriş (Passwordless)</button>
+    <div class="divider">veya</div>
+    <button class="google-btn" onclick="signInWithGoogle()">Google ile Giriş</button>
 </div>
 
 <script>
-async function postData(url, formData){
-    const res = await fetch(url, {method: "POST", body: formData});
-    return res.text();
+const firebaseConfig = {
+    apiKey: "AIzaSyC3LGJvDgHURiKWlhOEouqI2aH7xryIHf8",
+    authDomain: "fir-controls-85527.firebaseapp.com",
+    databaseURL: "https://fir-controls-85527-default-rtdb.firebaseio.com",
+    projectId: "fir-controls-85527",
+    storageBucket: "fir-controls-85527.firebasestorage.app",
+    messagingSenderId: "11631296961",
+    appId: "1:11631296961:web:4347c2ea0515d5ee2eef40",
+    measurementId: "G-HTWE9L14K7"
+};
+
+// Firebase başlat
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// Passwordless email link gönder
+function sendSignInLink() {
+    const email = document.getElementById('email').value;
+    const actionCodeSettings = {
+        url: window.location.href,
+        handleCodeInApp: true
+    };
+    auth.sendSignInLinkToEmail(email, actionCodeSettings)
+        .then(() => {
+            window.localStorage.setItem('emailForSignIn', email);
+            alert('Email linki gönderildi! Gelen kutunu kontrol et.');
+        })
+        .catch(error => {
+            console.error(error);
+            alert(error.message);
+        });
 }
 
-document.getElementById("registerForm").onsubmit = async function(e){
-    e.preventDefault();
-    const email = document.getElementById("regEmail").value;
-    const password = document.getElementById("regPassword").value;
-    const fd = new FormData();
-    fd.append("email", email);
-    fd.append("password", password);
-    const text = await postData("/register", fd);
-    document.getElementById("result").innerText = text;
+// Google ile giriş
+function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+        .then(result => {
+            alert('Giriş başarılı: ' + result.user.email);
+        })
+        .catch(error => {
+            console.error(error);
+            alert(error.message);
+        });
 }
 
-document.getElementById("loginForm").onsubmit = async function(e){
-    e.preventDefault();
-    const email = document.getElementById("logEmail").value;
-    const password = document.getElementById("logPassword").value;
-    const fd = new FormData();
-    fd.append("email", email);
-    fd.append("password", password);
-    const text = await postData("/login", fd);
-    document.getElementById("result").innerText = text;
+// Email link ile giriş kontrolü
+if (auth.isSignInWithEmailLink(window.location.href)) {
+    let email = window.localStorage.getItem('emailForSignIn');
+    if (!email) email = prompt('Emailinizi doğrulayın:');
+    auth.signInWithEmailLink(email, window.location.href)
+        .then(result => {
+            alert('Email ile giriş başarılı: ' + result.user.email);
+            window.localStorage.removeItem('emailForSignIn');
+        })
+        .catch(error => console.error(error));
 }
 </script>
 </body>
