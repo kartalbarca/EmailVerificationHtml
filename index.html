@@ -1,80 +1,70 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Firebase Auth Demo</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Localhost - Kayıt / Giriş</title>
+  <!-- Harici stil dosyası: aynı klasörde style.css olmalı -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <h1>Giriş Yap</h1>
-    <input type="email" id="email" placeholder="Email">
-    <button onclick="sendSignInLink()">Email ile Giriş (Passwordless)</button>
-    <div class="divider">veya</div>
-    <button class="google-btn" onclick="signInWithGoogle()">Google ile Giriş</button>
-</div>
+  <main class="wrap">
+    <header class="header">
+      <h1>Hesap</h1>
+      <p class="subtitle">Kayıt ol veya giriş yap — şifreli ya da şifresiz</p>
+    </header>
 
-<script>
-const firebaseConfig = {
-    apiKey: "AIzaSyC3LGJvDgHURiKWlhOEouqI2aH7xryIHf8",
-    authDomain: "fir-controls-85527.firebaseapp.com",
-    databaseURL: "https://fir-controls-85527-default-rtdb.firebaseio.com",
-    projectId: "fir-controls-85527",
-    storageBucket: "fir-controls-85527.firebasestorage.app",
-    messagingSenderId: "11631296961",
-    appId: "1:11631296961:web:4347c2ea0515d5ee2eef40",
-    measurementId: "G-HTWE9L14K7"
-};
+    <!-- Kayıt formu (şifre opsiyonel) -->
+    <section class="box">
+      <h2>Kayıt Ol</h2>
+      <form action="/register" method="POST" class="form">
+        <label for="reg-email">Email</label>
+        <input id="reg-email" name="email" type="email" required placeholder="you@example.com">
 
-// Firebase başlat
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+        <label for="reg-pass">Şifre (opsiyonel)</label>
+        <input id="reg-pass" name="password" type="password" placeholder="İstersen şifre gir">
 
-// Passwordless email link gönder
-function sendSignInLink() {
-    const email = document.getElementById('email').value;
-    const actionCodeSettings = {
-        url: window.location.href,
-        handleCodeInApp: true
-    };
-    auth.sendSignInLinkToEmail(email, actionCodeSettings)
-        .then(() => {
-            window.localStorage.setItem('emailForSignIn', email);
-            alert('Email linki gönderildi! Gelen kutunu kontrol et.');
-        })
-        .catch(error => {
-            console.error(error);
-            alert(error.message);
-        });
-}
+        <div class="actions">
+          <button type="submit" class="btn primary">Kayıt Ol</button>
+          <!-- Bu buton formu submit eder; backend şifre boşsa şifresiz kayıt yapmalı -->
+          <button type="submit" formaction="/register?force_passwordless=1" class="btn alt">Şifresiz Kayıt</button>
+        </div>
+      </form>
+    </section>
 
-// Google ile giriş
-function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-        .then(result => {
-            alert('Giriş başarılı: ' + result.user.email);
-        })
-        .catch(error => {
-            console.error(error);
-            alert(error.message);
-        });
-}
+    <!-- Şifreli giriş -->
+    <section class="box">
+      <h2>Şifreli Giriş</h2>
+      <form action="/login" method="POST" class="form">
+        <label for="log-email">Email</label>
+        <input id="log-email" name="email" type="email" required placeholder="you@example.com">
 
-// Email link ile giriş kontrolü
-if (auth.isSignInWithEmailLink(window.location.href)) {
-    let email = window.localStorage.getItem('emailForSignIn');
-    if (!email) email = prompt('Emailinizi doğrulayın:');
-    auth.signInWithEmailLink(email, window.location.href)
-        .then(result => {
-            alert('Email ile giriş başarılı: ' + result.user.email);
-            window.localStorage.removeItem('emailForSignIn');
-        })
-        .catch(error => console.error(error));
-}
-</script>
+        <label for="log-pass">Şifre</label>
+        <input id="log-pass" name="password" type="password" placeholder="Şifreniz">
+
+        <div class="actions">
+          <button type="submit" class="btn primary">Giriş Yap</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Şifresiz giriş (sadece email) -->
+    <section class="box">
+      <h2>Şifresiz Giriş</h2>
+      <form action="/login_passwordless" method="POST" class="form">
+        <label for="pwless-email">Email</label>
+        <input id="pwless-email" name="email" type="email" required placeholder="you@example.com">
+
+        <div class="actions">
+          <button type="submit" class="btn alt">Şifresiz Giriş Gönder</button>
+        </div>
+      </form>
+      <p class="note">Not: Şifresiz işlemde backend, kullanıcıya link/Token oluşturmalı veya doğrudan oturum açma izni vermeli.</p>
+    </section>
+
+    <footer class="footer">
+      <p>Kullanım: formlar backend `/register`, `/login`, `/login_passwordless` yollarını bekler.</p>
+    </footer>
+  </main>
 </body>
 </html>
