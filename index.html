@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register/Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h1>Kayıt / Giriş</h1>
+
+    <h2>Kayıt</h2>
+    <form id="registerForm">
+        Email: <input type="email" id="regEmail" required><br>
+        Şifre: <input type="password" id="regPassword" required><br>
+        <button type="submit">Kayıt Ol</button>
+    </form>
+
+    <h2>Giriş</h2>
+    <form id="loginForm">
+        Email: <input type="email" id="logEmail" required><br>
+        Şifre: <input type="password" id="logPassword" required><br>
+        <button type="submit">Giriş Yap</button>
+    </form>
+
+    <p id="result"></p>
+</div>
+
+<script>
+async function postData(url, formData){
+    const res = await fetch(url, {method: "POST", body: formData});
+    return res.text();
+}
+
+document.getElementById("registerForm").onsubmit = async function(e){
+    e.preventDefault();
+    const email = document.getElementById("regEmail").value;
+    const password = document.getElementById("regPassword").value;
+    const fd = new FormData();
+    fd.append("email", email);
+    fd.append("password", password);
+    const text = await postData("/register", fd);
+    document.getElementById("result").innerText = text;
+}
+
+document.getElementById("loginForm").onsubmit = async function(e){
+    e.preventDefault();
+    const email = document.getElementById("logEmail").value;
+    const password = document.getElementById("logPassword").value;
+    const fd = new FormData();
+    fd.append("email", email);
+    fd.append("password", password);
+    const text = await postData("/login", fd);
+    document.getElementById("result").innerText = text;
+}
+</script>
+</body>
+</html>
